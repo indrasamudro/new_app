@@ -40,25 +40,40 @@ class Api extends RestController {
 			"berat" => $data->berat,
 			"jenis" => $data->jenis,
 			"alamat" => $data->alamat,
-			"no_telp"=> $data->no_telp,		
-			
+			"no_telp"=> $data->no_telp,			
 		];
 		$input=array(
 			"berat" => $req['berat'], 
 			"jenis" => $req['jenis'],
 			"alamat" => $req["alamat"],
-			"no_telp" => $req["no_telp"]
+			"no_telp" => $req["no_telp"],
+			"status_terima" => "f",
+			"tgl_order" => date("Y-m-d h:i:s")
 			
 		);		
 		$dt =$this->m_api->order($input);
-		if($dt==true){
-			$message = array('message'=>'Data derhasil di simpan','code'=>200);
-		}else{
-			$message = array('message'=>'Gagal disimpan','code'=>201);
+		$dataRespon = $this->db->get_where("public.tb_order",["id_order"=>$dt])->result();
+		$resp = [];
+		foreach ($dataRespon as $value) {
+			$resp = [
+				"tgl_order" => $value->tgl_order,	
+				"berat" => $value->berat,
+				"jenis" => $value->jenis		
+			];
 		}
-
-
-		$this->response($message);			
+		if($dt==true){
+			$this->response( [
+				'code' => 200,
+				'status' => 'Sukses',
+				'response' => $resp
+			] );
+		}else{
+			$this->response( [
+				'status' => false,
+				'message' => 'No such user found'
+			], 404 );
+		}		
+			
 	}
 
 
